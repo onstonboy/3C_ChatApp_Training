@@ -3,7 +3,9 @@ package com.ccc.chatapp.repositories
 import com.ccc.chatapp.data.model.User
 import com.ccc.chatapp.data.source.local.sharedprf.SharedPrefsApi
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import io.reactivex.Observable
 import io.reactivex.Single
 
 interface UserRepository {
@@ -12,12 +14,32 @@ interface UserRepository {
     fun getCurrentUser(): User?
     fun signIn(user: User, password: String): Single<Any>
     fun isUserLogged(): Boolean
+    fun getListFriend(): Observable<User>
 }
 
 class UserRepositoryImpl(sharedPrefsApi: SharedPrefsApi) : UserRepository {
     private var mAuth: FirebaseAuth = FirebaseAuth.getInstance()
     private var mFirestore: FirebaseFirestore = FirebaseFirestore.getInstance()
     private var mUser: User? = null
+
+    override fun getListFriend(): Observable<User> {
+        return Observable.create<DocumentSnapshot> { emiter ->
+            mFirestore.collection("user")
+                .get()
+                .addOnSuccessListener { snapshort ->
+                    for (i in snapshort.documents) {
+                        emiter.onNext(i)
+                    }
+                }
+                .addOnFailureListener {
+                    emiter.tryOnError(it)
+                }
+        }.filter {
+            mUser?.listFriend?.contains(it.id) == true
+        }.map {
+            it.toObject(User::class.java)
+        }
+    }
 
     override fun isUserLogged(): Boolean {
         return mAuth.currentUser != null

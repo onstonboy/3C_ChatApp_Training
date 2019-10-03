@@ -19,7 +19,6 @@ import kotlinx.android.synthetic.main.activity_signin.*
 import javax.inject.Inject
 
 class SignInActivity : AppCompatActivity(), SigInView {
-
     @Inject
     lateinit var mUserRepository: UserRepository
     @Inject
@@ -32,7 +31,8 @@ class SignInActivity : AppCompatActivity(), SigInView {
         "",
         "",
         "",
-        ""
+        "",
+        null
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,10 +73,6 @@ class SignInActivity : AppCompatActivity(), SigInView {
         mSignInNavigator.gotoChatActivity()
     }
 
-    override fun updateAvatar(url : String) {
-        mUser.avatar = url
-    }
-
     override fun onSIgnInFailed() {
         signInProgress.gone()
         Toast.makeText(this, getString(R.string.text_signIn_failed), Toast.LENGTH_LONG).show()
@@ -107,7 +103,7 @@ class SignInActivity : AppCompatActivity(), SigInView {
                 mUser.fullName = fullNameSignInEditText.text.toString()
                 val password = passwordSignInEditText.text.toString()
                 mUser.phone = phoneSignInEditText.text.toString()
-                mPresenter.getUrlAvatar(mAvatar)
+                mUser.avatar = mAvatar.toString()
                 mPresenter.signIn(mUser, password)
                 signInProgress.show()
             }
